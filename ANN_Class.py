@@ -1,11 +1,13 @@
 import numpy as np
+import random
 
 class ANN():
 
     def __init__(self, *layers):
         self.layers = len(layers) - 1
-        self.biases = [np.random.uniform(low=-5, high=5, size=layer) for layer in layers[1:]]
-        self.weights = [np.random.uniform(low=-5, high=5, size=(next_layer, prev_layer))\
+        w = 0.01
+        self.biases = [np.random.uniform(low=-w, high=w, size=layer) for layer in layers[1:]]
+        self.weights = [np.random.uniform(low=-w, high=w, size=(next_layer, prev_layer))\
             for prev_layer, next_layer in zip(layers[:-1], layers[1:])]
 
     def forward_run(self, input_vector):
@@ -27,8 +29,8 @@ class ANN():
 
     def back_propagation(self, input_vector, target):
         output_vector, z_vectors = self.forward_run(input_vector)
-        error = (output_vector - target)*softmax_derivative(z_vectors[-1]) # delta_L
-        print(error)
+        sm_d = softmax_derivative(z_vectors[-1])
+        error = (output_vector - target)*sm_d # delta_L
         tmp.biases[-1] = tmp.biases[-1] - error # bias_L
         tmp.weights[-1] = tmp.weights[-1] - np.outer(error, ReLU(z_vectors[-2])) # weights_L
         for i in range(self.layers - 1, 1, -1):
@@ -48,15 +50,18 @@ def ReLU(z):
     return np.maximum(z, 0)
 
 def softmax_derivative(z):
-    s = z.reshape(-1,1)
-    return (np.diagflat(s) - np.dot(s, s.T)).diagonal()
+    #s = softmax(z).reshape(-1,1)
+    #return (np.diagflat(s) - np.dot(s, s.T)).diagonal()
+    s = softmax(z)
+    return s*(1-s)
 
 def ReLU_derivative(z):
     return np.maximum(np.sign(z), 0)
 
-target = np.array([0,1,0,0,0,0])
-tmp = ANN(10,8,5,6)
-input_ = np.array([i for i in range(10)])
+tmp = ANN(700,200,50,10)
+random.seed('ANN')
+input_ = np.array([random.random() for i in range(700)])
+target = np.array([1 if i == 5 else 0 for i in range(10)])
 t, _ = tmp.forward_run(input_)
 t
 
