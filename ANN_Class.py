@@ -34,15 +34,15 @@ class ANN():
         output_vector, z_vectors = self.forward_run(input_vector)
         sm_d = softmax_derivative(z_vectors[-1])
         error = (output_vector - target)*sm_d # delta_L
-        tmp.biases[-1] = tmp.biases[-1] - error*eta # bias_L
-        tmp.weights[-1] = tmp.weights[-1] - np.outer(error, ReLU(z_vectors[-2]))*eta # weights_L
+        self.biases[-1] = self.biases[-1] - error*eta # bias_L
+        self.weights[-1] = self.weights[-1] - np.outer(error, ReLU(z_vectors[-2]))*eta # weights_L
         for i in range(self.layers - 1, 1, -1):
             error = (self.weights[i].T.dot(error))*ReLU_derivative(z_vectors[i-1])
-            tmp.biases[i-1] = tmp.biases[i-1] - error*eta
-            tmp.weights[i-1] = tmp.weights[i-1] - np.outer(error, ReLU(z_vectors[i-2]))*eta
+            self.biases[i-1] = self.biases[i-1] - error*eta
+            self.weights[i-1] = self.weights[i-1] - np.outer(error, ReLU(z_vectors[i-2]))*eta
         error = (self.weights[1].T.dot(error))*ReLU_derivative(z_vectors[0])
-        tmp.biases[0] = tmp.biases[0] - error*eta
-        tmp.weights[0] = tmp.weights[0] - np.outer(error, input_vector)*eta
+        self.biases[0] = self.biases[0] - error*eta
+        self.weights[0] = self.weights[0] - np.outer(error, input_vector)*eta
         pass
 
 def softmax(z):
@@ -60,7 +60,7 @@ def softmax_derivative(z):
 
 def ReLU_derivative(z):
     return np.maximum(np.sign(z), 0)
-
+""" 
 tmp = ANN(784,256,32,10)
 random.seed('ANN')
 
@@ -74,20 +74,26 @@ test = test.iloc[:,:-1]
 
 bar = Bar('Processing', max=train.shape[0])
 
-for i in range(25):
+def accuracy():
+    results = []
+    for i in test.index:
+        output, _ = tmp.forward_run(test.iloc[i])
+        results.append(np.argmax(output))
+    #pd.Series(results).value_counts()
+    print(sum(np.array(results) == test_labels.values)/test_labels.shape[0])
+
+for i in range(10):
     print(f'Epoch: {i}')
     for i in train.index:
         target = np.array([1 if j == labels.iloc[i] else 0 for j in range(10)])
         tmp.back_propagation(train.iloc[i], target)
         bar.next()
+    accuracy()
 
-results = []
-for i in test.index:
-    output, _ = tmp.forward_run(test.iloc[i])
-    results.append(np.argmax(output))
-pd.Series(results).value_counts()
+import pickle
 
-sum(np.array(results) == test_labels.iloc[:1000].values)
+pickle.dump(tmp, open('/home/filip/Git/Custom ANN/ANN.p', 'wb'))
+ """
 """ input_ = np.array([random.random() for i in range(700)])
 target = np.array([1 if i == 5 else 0 for i in range(10)])
 t, _ = tmp.forward_run(input_)
