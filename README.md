@@ -128,4 +128,10 @@ def back_propagation(self, input_vector, target):
 
 # The Results
 
-The ANN was trained on MNIST dataset.
+The ANN was trained on MNIST dataset. It achieves 90.7% accuracy on the test set.
+
+![](https://github.com/93fk/Custom-ANN/blob/master/empirical/2_pipeline/2_Visualize_ANN/out/ConfusionMatrix.png?raw=true)
+
+On the below animation you cans see how the net operates. On the left side you can see the input image, and nex to it you have 1st hidden layer, 2nd hidden layer and the output layer. You can clearly see how the ReLU activation function 'shuts down' certain neurons and how the softmax function votes for the most probable class.
+
+![](https://github.com/93fk/Custom-ANN/blob/master/empirical/2_pipeline/2_Visualize_ANN/out/ANN_visualized.gif?raw=true)

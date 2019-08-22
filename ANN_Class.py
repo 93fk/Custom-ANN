@@ -1,18 +1,45 @@
-import numpy as np
-import pandas as pd
-import random
-from progress.bar import Bar
 
+# coding: utf-8
+
+"""
+Class for building custom ANN
+"""
+
+NAME = '0_ANN_Class'
+PROJECT = 'Custom_ANN'
+PYTHON_VERSION = '3.6.8'
+
+## Imports
+import os, re
+import numpy as np
+import random
+
+# ---------
+# Main code
+# ---------
 class ANN():
 
     def __init__(self, *layers):
+        """
+        Create an Artificial Neural Network given nodes number in each layer.
+        First number is the number of nodes in the input layer and the last is the number of nodes in the output layer.
+
+        Given the set of numbers: 100, 50, 30, 20, 5 we expect vector of length 100 as an input, and vector of length 5 as an output.
+        Numbers: 50, 30 and 20 are the number of nodes in hidden layers.
+
+        The network uses ReLU as an activation function in intermediate layer and Softmax function in the output layer, therefore
+        the network is aimed to work well with crassification problems.
+        """
         self.layers = len(layers) - 1
-        w = 0.05
+        w = 0.05 # initialized weights and biases range from -w to w
         self.biases = [np.random.uniform(low=-w, high=w, size=layer) for layer in layers[1:]]
         self.weights = [np.random.uniform(low=-w, high=w, size=(next_layer, prev_layer))\
             for prev_layer, next_layer in zip(layers[:-1], layers[1:])]
 
     def forward_run(self, input_vector):
+        """
+        Given the input vector, the method will return the output as well as intermediate layers output, on given ANN object.
+        """
         z_vectors = []
         for layer in range(self.layers):
             if layer == self.layers - 1:
@@ -30,7 +57,10 @@ class ANN():
         return output_vector, z_vectors
 
     def back_propagation(self, input_vector, target):
-        eta = 0.00001
+        """
+        This method will propagate errors and adjust weights and biases to minimize prediciton error.
+        """
+        eta = 0.00001 # learning rate
         output_vector, z_vectors = self.forward_run(input_vector)
         sm_d = softmax_derivative(z_vectors[-1])
         error = (output_vector - target)*sm_d # delta_L
@@ -45,6 +75,8 @@ class ANN():
         self.weights[0] = self.weights[0] - np.outer(error, input_vector)*eta
         pass
 
+# Activation functions
+
 def softmax(z):
     e = np.exp(z - np.max(z))
     return e/np.sum(e)
@@ -53,52 +85,9 @@ def ReLU(z):
     return np.maximum(z, 0)
 
 def softmax_derivative(z):
-    #s = softmax(z).reshape(-1,1)
-    #return (np.diagflat(s) - np.dot(s, s.T)).diagonal()
     s = softmax(z)
     return s*(1-s)
 
 def ReLU_derivative(z):
     return np.maximum(np.sign(z), 0)
-""" 
-tmp = ANN(784,256,32,10)
-random.seed('ANN')
 
-train = pd.read_csv('/home/filip/Git/Custom ANN/MNIST/train.csv', header=0, index_col=0)
-labels = train['labels']
-train = train.iloc[:,:-1]
-
-test = pd.read_csv('/home/filip/Git/Custom ANN/MNIST/test.csv', header=0, index_col=0)
-test_labels = test['labels']
-test = test.iloc[:,:-1]
-
-bar = Bar('Processing', max=train.shape[0])
-
-def accuracy():
-    results = []
-    for i in test.index:
-        output, _ = tmp.forward_run(test.iloc[i])
-        results.append(np.argmax(output))
-    #pd.Series(results).value_counts()
-    print(sum(np.array(results) == test_labels.values)/test_labels.shape[0])
-
-for i in range(10):
-    print(f'Epoch: {i}')
-    for i in train.index:
-        target = np.array([1 if j == labels.iloc[i] else 0 for j in range(10)])
-        tmp.back_propagation(train.iloc[i], target)
-        bar.next()
-    accuracy()
-
-import pickle
-
-pickle.dump(tmp, open('/home/filip/Git/Custom ANN/ANN.p', 'wb'))
- """
-""" input_ = np.array([random.random() for i in range(700)])
-target = np.array([1 if i == 5 else 0 for i in range(10)])
-t, _ = tmp.forward_run(input_)
-t
-
-tmp.back_propagation(input_, target)
-t, _ = tmp.forward_run(input_)
-t """
